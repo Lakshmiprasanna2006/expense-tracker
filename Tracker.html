@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>Expense Tracker</title>
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+<link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@300..700&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="Tracker.css">
+
+</head>
+
+<body>
+
+<div class="header">
+<p class="m-0">Expense<br>Tracker
+<img src="expense.jpeg" width="35" height="35">
+</p>
+</div>
+
+
+<div class="input-form">
+
+<div class="form-floating inputs">
+<input type="date" class="form-control dateInput">
+<label>Date</label>
+</div>
+
+<div class="form-floating inputs">
+<input type="number" class="form-control amountInput">
+<label>Amount</label>
+</div>
+
+<select class="form-select inputs transactionType">
+<option selected disabled>Transaction Type</option>
+<option value="income">Income</option>
+<option value="expense">Expense</option>
+</select>
+
+<button class="btn" id="add-button" onclick="addTransaction()">+</button>
+
+</div>
+
+
+<div class="cards mt-4">
+
+<div class="card" style="width:18rem;">
+<div class="card-body">
+<h5>Total Income</h5>
+<h1 class="m-0"><span id="income">0</span></h1>
+</div>
+</div>
+
+<div class="card" style="width:18rem;">
+<div class="card-body">
+<h5>Total Expense</h5>
+<h1 class="m-0"><span id="expense">0</span></h1>
+</div>
+</div>
+
+<div class="card" style="width:18rem;">
+<div class="card-body">
+<h5>Balance</h5>
+<h1 class="m-0"><span id="balance">0</span></h1>
+</div>
+</div>
+
+</div>
+
+<br>
+
+
+<table class="transaction-table" id="table">
+
+<tr id="header-row">
+<th>Amount</th>
+<th>Transaction Type</th>
+<th>Date</th>
+<th>Action</th>
+</tr>
+
+</table>
+
+
+<script>
+
+let table = document.getElementById("table");
+
+let transactions = JSON.parse(localStorage.getItem("transactions")) || [];
+
+
+function saveTransactions(){
+localStorage.setItem("transactions", JSON.stringify(transactions));
+}
+
+
+function updateTotals(){
+
+let income = 0;
+let expense = 0;
+
+transactions.forEach(t=>{
+
+if(t.type === "income"){
+income += parseInt(t.amount);
+}
+
+else if(t.type === "expense"){
+expense += parseInt(t.amount);
+}
+
+});
+
+document.getElementById("income").innerText = income;
+document.getElementById("expense").innerText = expense;
+document.getElementById("balance").innerText = income - expense;
+
+}
+
+
+function addTransaction(){
+
+let date = document.getElementsByClassName("dateInput")[0].value;
+let amount = document.getElementsByClassName("amountInput")[0].value;
+let type = document.getElementsByClassName("transactionType")[0].value;
+
+if(!date || !amount || !type){
+alert("Please fill all fields");
+return;
+}
+
+let transaction = {
+date:date,
+amount:amount,
+type:type
+};
+
+transactions.push(transaction);
+
+saveTransactions();
+
+renderRow(transaction);
+
+updateTotals();
+
+document.getElementsByClassName("dateInput")[0].value="";
+document.getElementsByClassName("amountInput")[0].value="";
+document.getElementsByClassName("transactionType")[0].value="Transaction Type";
+
+}
+
+
+function renderRow(t){
+
+let row = document.createElement("tr");
+
+let amountCell = document.createElement("td");
+amountCell.innerText = t.amount;
+
+let typeCell = document.createElement("td");
+typeCell.innerText = t.type;
+
+let dateCell = document.createElement("td");
+dateCell.innerText = t.date;
+
+let actionCell = document.createElement("td");
+
+let deleteBtn = document.createElement("button");
+deleteBtn.innerText="Delete";
+deleteBtn.classList.add("delete-button");
+
+deleteBtn.onclick = function(){
+
+transactions = transactions.filter(item => item !== t);
+
+saveTransactions();
+
+row.remove();
+
+updateTotals();
+
+};
+
+actionCell.appendChild(deleteBtn);
+
+row.appendChild(amountCell);
+row.appendChild(typeCell);
+row.appendChild(dateCell);
+row.appendChild(actionCell);
+
+table.appendChild(row);
+
+}
+
+
+function loadTransactions(){
+
+transactions.forEach(t=>{
+renderRow(t);
+});
+
+updateTotals();
+
+}
+
+loadTransactions();
+
+</script>
+
+</body>
+</html>
